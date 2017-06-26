@@ -27,6 +27,9 @@ class MoviesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
+        tableView.dataSource = self
+        edgesForExtendedLayout = []
         // Update tableView everytime movies gets a new value
         filteredMovies.asObservable()
             .subscribe(onNext: { [weak self] _ in
@@ -38,10 +41,9 @@ class MoviesViewController: UIViewController {
         
         
         // Filter with minimum movie year treshHold
-        Observable.combineLatest(year.asObservable(), movies.asObservable()) { year, movies in
+        Observable.combineLatest(year.asObservable(), movies.asObservable()) { (year, movies) -> [Movie] in
             return movies.filter {
-                return $0.year >= year }
-                .sorted { $0.title < $1.title }
+                $0.year >= year }.sorted { $0.title < $1.title }
             }
             .bindTo(filteredMovies)
             .addDisposableTo(disposeBag)
@@ -63,7 +65,7 @@ extension MoviesViewController: UITableViewDataSource {
         return filteredMovies.value.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
         let movie = filteredMovies.value[indexPath.row]
         cell.textLabel?.text = movie.title
         return cell
