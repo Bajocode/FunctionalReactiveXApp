@@ -78,8 +78,6 @@ extension GenresViewController: UITableViewDelegate {
         if !selectedGenre.movies.isEmpty {
             let moviesVC = MoviesViewController()
             moviesVC.title = selectedGenre.name
-            navigationItem.prompt = "\(2017)"
-            // Whether the view is already loaded or not is of no consequence, thanks to observables!
             moviesVC.movies.value = selectedGenre.movies
             navigationController?.pushViewController(moviesVC, animated: true)
         }
