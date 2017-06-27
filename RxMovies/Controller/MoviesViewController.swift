@@ -20,7 +20,7 @@ class MoviesViewController: UIViewController {
     let year = Variable<Int>(2017)
     private let disposeBag = DisposeBag()
     @IBOutlet var slider: UISlider!
-    @IBOutlet var tableView: UITableView!
+    @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var yearLabel: UILabel!
     
     // MARK: - Lifecycle
@@ -28,8 +28,8 @@ class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // TableView
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
-        tableView.dataSource = self
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "CellID")
+        collectionView.dataSource = self
         
         // Rx stream
         subscribeUIRefreshToNewData()
@@ -44,7 +44,7 @@ class MoviesViewController: UIViewController {
         filteredMovies.asObservable()
             .subscribe(onNext: { [weak self] _ in
                 DispatchQueue.main.async {
-                    self?.tableView.reloadData()
+                    self?.collectionView.reloadData()
                 }
             })
             .addDisposableTo(disposeBag)
@@ -72,15 +72,15 @@ class MoviesViewController: UIViewController {
 
 // MARK: - Tableview Datasource
 
-extension MoviesViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print(filteredMovies.value.count)
+extension MoviesViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return filteredMovies.value.count
     }
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath)
+        cell.backgroundColor = .black
         let movie = filteredMovies.value[indexPath.row]
-        cell.textLabel?.text = movie.title
+        print(movie.year)
         return cell
     }
 }
