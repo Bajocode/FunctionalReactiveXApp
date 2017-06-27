@@ -23,25 +23,35 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Gey-rJ-D1p">
-                    <rect key="frame" x="0.0" y="133.5" width="375" height="533.5"/>
+                    <rect key="frame" x="0.0" y="164" width="375" height="503"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ES4-Y5-4ST">
-                    <rect key="frame" x="0.0" y="0.0" width="375" height="133.5"/>
+                    <rect key="frame" x="0.0" y="64" width="375" height="100"/>
                     <subviews>
-                        <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2017" minValue="1920" maxValue="2017" translatesAutoresizingMaskIntoConstraints="NO" id="R2R-7T-F4j">
-                            <rect key="frame" x="6" y="51" width="363" height="31"/>
-                            <connections>
-                                <action selector="sliderValueChanged:" destination="-1" eventType="valueChanged" id="hCg-ru-NF6"/>
-                            </connections>
-                        </slider>
+                        <stackView opaque="NO" contentMode="scaleToFill" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="l0U-oU-VDx">
+                            <rect key="frame" x="24" y="34.5" width="327" height="30"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="q2h-v1-qWK">
+                                    <rect key="frame" x="0.0" y="0.0" width="42" height="30"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2017" minValue="1920" maxValue="2017" translatesAutoresizingMaskIntoConstraints="NO" id="R2R-7T-F4j">
+                                    <rect key="frame" x="72" y="0.0" width="257" height="31"/>
+                                    <connections>
+                                        <action selector="sliderValueChanged:" destination="-1" eventType="valueChanged" id="hCg-ru-NF6"/>
+                                    </connections>
+                                </slider>
+                            </subviews>
+                        </stackView>
                     </subviews>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
-                        <constraint firstItem="R2R-7T-F4j" firstAttribute="centerX" secondItem="ES4-Y5-4ST" secondAttribute="centerX" id="8Dk-Ih-tub"/>
-                        <constraint firstItem="R2R-7T-F4j" firstAttribute="leading" secondItem="ES4-Y5-4ST" secondAttribute="leading" constant="8" id="Hyi-Ei-uZf"/>
-                        <constraint firstItem="R2R-7T-F4j" firstAttribute="centerY" secondItem="ES4-Y5-4ST" secondAttribute="centerY" id="iRg-pJ-6j2"/>
-                        <constraint firstAttribute="trailing" secondItem="R2R-7T-F4j" secondAttribute="trailing" constant="8" id="vz7-sy-Wuz"/>
+                        <constraint firstAttribute="trailing" secondItem="l0U-oU-VDx" secondAttribute="trailing" constant="24" id="IPl-Cm-5sk"/>
+                        <constraint firstItem="l0U-oU-VDx" firstAttribute="leading" secondItem="ES4-Y5-4ST" secondAttribute="leading" constant="24" id="IyE-1y-x2g"/>
+                        <constraint firstItem="l0U-oU-VDx" firstAttribute="centerY" secondItem="ES4-Y5-4ST" secondAttribute="centerY" id="bu0-sL-XBr"/>
                     </constraints>
                 </view>
             </subviews>
@@ -49,9 +59,9 @@
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="ES4-Y5-4ST" secondAttribute="trailing" id="3iR-Ia-t72"/>
                 <constraint firstItem="Gey-rJ-D1p" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="Kdf-Py-IQH"/>
-                <constraint firstItem="ES4-Y5-4ST" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="LnD-BX-Uf9"/>
+                <constraint firstItem="ES4-Y5-4ST" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="64" id="LnD-BX-Uf9"/>
                 <constraint firstItem="ES4-Y5-4ST" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="W0J-Kg-klz"/>
-                <constraint firstItem="ES4-Y5-4ST" firstAttribute="height" secondItem="i5M-Pr-FkT" secondAttribute="height" multiplier="0.2" id="ZGN-ry-RtJ"/>
+                <constraint firstItem="ES4-Y5-4ST" firstAttribute="height" secondItem="i5M-Pr-FkT" secondAttribute="height" multiplier="0.15" id="ZGN-ry-RtJ"/>
                 <constraint firstItem="Gey-rJ-D1p" firstAttribute="top" secondItem="ES4-Y5-4ST" secondAttribute="bottom" id="ZPt-8K-uOI"/>
                 <constraint firstAttribute="bottom" secondItem="Gey-rJ-D1p" secondAttribute="bottom" id="ktE-x7-miw"/>
                 <constraint firstAttribute="trailing" secondItem="Gey-rJ-D1p" secondAttribute="trailing" id="pan-Ru-yO4"/>

@@ -11,7 +11,6 @@
 		227A2EF31F0197E000D25E74 /* MoviesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 227A2EF11F0197E000D25E74 /* MoviesViewController.xib */; };
 		22A57A321F00F002009E3179 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A57A311F00F002009E3179 /* AppDelegate.swift */; };
 		22A57A391F00F002009E3179 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 22A57A381F00F002009E3179 /* Assets.xcassets */; };
-		22A57A3C1F00F002009E3179 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 22A57A3A1F00F002009E3179 /* LaunchScreen.storyboard */; };
 		22CCD45B1F00F5FE00CE9D4C /* TmdbService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22CCD45A1F00F5FE00CE9D4C /* TmdbService.swift */; };
 		22CCD45D1F00F60D00CE9D4C /* Movie.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22CCD45C1F00F60D00CE9D4C /* Movie.swift */; };
 		22CCD45F1F010DDF00CE9D4C /* Genre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22CCD45E1F010DDF00CE9D4C /* Genre.swift */; };
@@ -22,12 +21,12 @@
 /* Begin PBXFileReference section */
 		09C7A02C7F4BAAD1FE9ACD60 /* Pods_RxMovies.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RxMovies.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1165C89A76F377418CCE6C6E /* Pods-RxMovies.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RxMovies.release.xcconfig"; path = "Pods/Target Support Files/Pods-RxMovies/Pods-RxMovies.release.xcconfig"; sourceTree = "<group>"; };
+		220082C81F0222CA000E9715 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		227A2EF01F0197E000D25E74 /* MoviesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesViewController.swift; sourceTree = "<group>"; };
 		227A2EF11F0197E000D25E74 /* MoviesViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MoviesViewController.xib; sourceTree = "<group>"; };
 		22A57A2E1F00F002009E3179 /* RxMovies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RxMovies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22A57A311F00F002009E3179 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		22A57A381F00F002009E3179 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		22A57A3B1F00F002009E3179 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		22A57A3D1F00F002009E3179 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		22CCD45A1F00F5FE00CE9D4C /* TmdbService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TmdbService.swift; sourceTree = "<group>"; };
 		22CCD45C1F00F60D00CE9D4C /* Movie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movie.swift; sourceTree = "<group>"; };
@@ -48,6 +47,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		220082C61F0222A7000E9715 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				22CCD45A1F00F5FE00CE9D4C /* TmdbService.swift */,
+				22CCD45C1F00F60D00CE9D4C /* Movie.swift */,
+				22CCD45E1F010DDF00CE9D4C /* Genre.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		227A2EF41F0197E700D25E74 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -79,14 +88,12 @@
 		22A57A301F00F002009E3179 /* RxMovies */ = {
 			isa = PBXGroup;
 			children = (
-				22A57A311F00F002009E3179 /* AppDelegate.swift */,
-				22CCD45A1F00F5FE00CE9D4C /* TmdbService.swift */,
-				22CCD45C1F00F60D00CE9D4C /* Movie.swift */,
-				22CCD45E1F010DDF00CE9D4C /* Genre.swift */,
-				22A57A381F00F002009E3179 /* Assets.xcassets */,
-				22A57A3A1F00F002009E3179 /* LaunchScreen.storyboard */,
-				22A57A3D1F00F002009E3179 /* Info.plist */,
+				220082C61F0222A7000E9715 /* Model */,
 				227A2EF41F0197E700D25E74 /* Controller */,
+				22A57A311F00F002009E3179 /* AppDelegate.swift */,
+				22A57A3D1F00F002009E3179 /* Info.plist */,
+				22A57A381F00F002009E3179 /* Assets.xcassets */,
+				220082C71F0222CA000E9715 /* LaunchScreen.storyboard */,
 			);
 			path = RxMovies;
 			sourceTree = "<group>";
@@ -169,7 +176,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				22A57A3C1F00F002009E3179 /* LaunchScreen.storyboard in Resources */,
 				227A2EF31F0197E000D25E74 /* MoviesViewController.xib in Resources */,
 				22A57A391F00F002009E3179 /* Assets.xcassets in Resources */,
 			);
@@ -242,10 +248,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		22A57A3A1F00F002009E3179 /* LaunchScreen.storyboard */ = {
+		220082C71F0222CA000E9715 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				22A57A3B1F00F002009E3179 /* Base */,
+				220082C81F0222CA000E9715 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
