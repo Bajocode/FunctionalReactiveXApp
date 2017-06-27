@@ -22,6 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Configure window
         window = UIWindow(frame: UIScreen.main.bounds)
         let genresVC = GenresViewController()
+        genresVC.title = "Genres"
         let navC = UINavigationController(rootViewController: genresVC)
         window!.rootViewController = navC
         window!.makeKeyAndVisible()

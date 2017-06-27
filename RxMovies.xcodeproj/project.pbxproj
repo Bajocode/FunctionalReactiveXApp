@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		221D0EF21F02781E00962D94 /* MovieCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 221D0EF11F02781E00962D94 /* MovieCollectionViewCell.swift */; };
 		227A2EF21F0197E000D25E74 /* MoviesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227A2EF01F0197E000D25E74 /* MoviesViewController.swift */; };
 		227A2EF31F0197E000D25E74 /* MoviesViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 227A2EF11F0197E000D25E74 /* MoviesViewController.xib */; };
 		22A57A321F00F002009E3179 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A57A311F00F002009E3179 /* AppDelegate.swift */; };
@@ -22,6 +23,7 @@
 		09C7A02C7F4BAAD1FE9ACD60 /* Pods_RxMovies.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RxMovies.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1165C89A76F377418CCE6C6E /* Pods-RxMovies.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RxMovies.release.xcconfig"; path = "Pods/Target Support Files/Pods-RxMovies/Pods-RxMovies.release.xcconfig"; sourceTree = "<group>"; };
 		220082C81F0222CA000E9715 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		221D0EF11F02781E00962D94 /* MovieCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieCollectionViewCell.swift; sourceTree = "<group>"; };
 		227A2EF01F0197E000D25E74 /* MoviesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesViewController.swift; sourceTree = "<group>"; };
 		227A2EF11F0197E000D25E74 /* MoviesViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MoviesViewController.xib; sourceTree = "<group>"; };
 		22A57A2E1F00F002009E3179 /* RxMovies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RxMovies.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,6 +64,7 @@
 			children = (
 				22CCD4601F01228900CE9D4C /* GenresViewController.swift */,
 				227A2EF01F0197E000D25E74 /* MoviesViewController.swift */,
+				221D0EF11F02781E00962D94 /* MovieCollectionViewCell.swift */,
 				227A2EF11F0197E000D25E74 /* MoviesViewController.xib */,
 			);
 			path = Controller;
@@ -240,6 +243,7 @@
 				22A57A321F00F002009E3179 /* AppDelegate.swift in Sources */,
 				22CCD45D1F00F60D00CE9D4C /* Movie.swift in Sources */,
 				22CCD45B1F00F5FE00CE9D4C /* TmdbService.swift in Sources */,
+				221D0EF21F02781E00962D94 /* MovieCollectionViewCell.swift in Sources */,
 				227A2EF21F0197E000D25E74 /* MoviesViewController.swift in Sources */,
 				22CCD45F1F010DDF00CE9D4C /* Genre.swift in Sources */,
 			);

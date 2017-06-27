@@ -9,7 +9,6 @@
 import UIKit
 import RxCocoa
 import RxSwift
-import Kingfisher
 
 class MoviesViewController: UIViewController {
     
@@ -30,7 +29,7 @@ class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // TableView
-        collectionView.register(MovieCell.self, forCellWithReuseIdentifier: cellID)
+        collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
         collectionView.dataSource = self
         
         // Rx stream
@@ -72,50 +71,17 @@ class MoviesViewController: UIViewController {
 }
 
 
-// MARK: - Tableview Datasource
+// MARK: - CollectionView Datasource
 
 extension MoviesViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return filteredMovies.value.count
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! MovieCell
-        cell.backgroundColor = .black
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! MovieCollectionViewCell
         cell.configure(with: filteredMovies.value[indexPath.row].posterURL)
         return cell
     }
 }
 
-
-// MARK: - MovieCell
-
-class MovieCell: UICollectionViewCell {
-    
-    // MARK: - Properties
-    private let imageView = UIImageView()
-    
-    // MARK: - Initializers
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        imageView.frame = bounds
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        addSubview(imageView)
-    }
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        fatalError("init?(coder aDecoder: NSCoder) has not been implemented")
-    }
-    
-    // MARK: - Lifecycle
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        imageView.kf.cancelDownloadTask()
-        imageView.image = nil
-    }
-    
-    // MARK: - Methods
-    func configure(with url: URL) {
-        imageView.kf.setImage(with: url)
-    }
-}
+extension MoviesViewController
