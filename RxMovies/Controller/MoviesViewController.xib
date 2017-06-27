@@ -15,6 +15,7 @@
                 <outlet property="slider" destination="R2R-7T-F4j" id="ywX-0i-UcF"/>
                 <outlet property="tableView" destination="Gey-rJ-D1p" id="HRn-gC-Suf"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+                <outlet property="yearLabel" destination="q2h-v1-qWK" id="thS-qW-vCA"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
@@ -32,14 +33,14 @@
                         <stackView opaque="NO" contentMode="scaleToFill" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="l0U-oU-VDx">
                             <rect key="frame" x="24" y="34.5" width="327" height="30"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="q2h-v1-qWK">
-                                    <rect key="frame" x="0.0" y="0.0" width="42" height="30"/>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="2017" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="q2h-v1-qWK">
+                                    <rect key="frame" x="0.0" y="0.0" width="38" height="30"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                     <nil key="textColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2017" minValue="1920" maxValue="2017" translatesAutoresizingMaskIntoConstraints="NO" id="R2R-7T-F4j">
-                                    <rect key="frame" x="72" y="0.0" width="257" height="31"/>
+                                    <rect key="frame" x="68" y="0.0" width="261" height="31"/>
                                     <connections>
                                         <action selector="sliderValueChanged:" destination="-1" eventType="valueChanged" id="hCg-ru-NF6"/>
                                     </connections>

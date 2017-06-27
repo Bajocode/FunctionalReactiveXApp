@@ -21,15 +21,25 @@ class MoviesViewController: UIViewController {
     private let disposeBag = DisposeBag()
     @IBOutlet var slider: UISlider!
     @IBOutlet var tableView: UITableView!
-    
+    @IBOutlet var yearLabel: UILabel!
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // TableView
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
         tableView.dataSource = self
-        edgesForExtendedLayout = []
+        
+        // Rx stream
+        subscribeUIRefreshToNewData()
+        bindYearFilter()
+    }
+    
+    
+    // MARK: - Methods
+    
+    private func subscribeUIRefreshToNewData() {
         // Update tableView everytime movies gets a new value
         filteredMovies.asObservable()
             .subscribe(onNext: { [weak self] _ in
@@ -38,8 +48,9 @@ class MoviesViewController: UIViewController {
                 }
             })
             .addDisposableTo(disposeBag)
-        
-        
+    }
+    
+    private func bindYearFilter() {
         // Filter with minimum movie year treshHold
         Observable.combineLatest(year.asObservable(), movies.asObservable()) { (year, movies) -> [Movie] in
             return movies.filter {
@@ -51,8 +62,10 @@ class MoviesViewController: UIViewController {
     
     
     // MARK: - Actions
+    
     @IBAction func sliderValueChanged(_ sender: UISlider) {
         year.value = Int(sender.value)
+        yearLabel.text = "\(year.value)"
     }
 }
 
