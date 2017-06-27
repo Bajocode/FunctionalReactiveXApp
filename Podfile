@@ -3,6 +3,7 @@ use_frameworks!
 target 'RxMovies' do
     pod 'RxSwift', '~> 3.1.0'
     pod 'RxCocoa', '~> 3.1.0'
+    pod 'Kingfisher', '~> 3.0'
 end
 
 # enable tracing resources
