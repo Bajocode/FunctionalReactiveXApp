@@ -9,6 +9,7 @@
 import UIKit
 import RxCocoa
 import RxSwift
+import Kingfisher
 
 class MoviesViewController: UIViewController {
     
@@ -16,19 +17,20 @@ class MoviesViewController: UIViewController {
     // MARK: - Properties
     
     let movies = Variable<[Movie]>([])
-    let filteredMovies = Variable<[Movie]>([])
-    let year = Variable<Int>(2017)
+    fileprivate let filteredMovies = Variable<[Movie]>([])
+    private let year = Variable<Int>(2017)
+    fileprivate let cellID = "MovieCell"
     private let disposeBag = DisposeBag()
-    @IBOutlet var slider: UISlider!
-    @IBOutlet var collectionView: UICollectionView!
-    @IBOutlet var yearLabel: UILabel!
+    @IBOutlet private var slider: UISlider!
+    @IBOutlet private var collectionView: UICollectionView!
+    @IBOutlet private var yearLabel: UILabel!
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // TableView
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "CellID")
+        collectionView.register(MovieCell.self, forCellWithReuseIdentifier: cellID)
         collectionView.dataSource = self
         
         // Rx stream
@@ -77,10 +79,43 @@ extension MoviesViewController: UICollectionViewDataSource {
         return filteredMovies.value.count
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! MovieCell
         cell.backgroundColor = .black
-        let movie = filteredMovies.value[indexPath.row]
-        print(movie.year)
+        cell.configure(with: filteredMovies.value[indexPath.row].posterURL)
         return cell
+    }
+}
+
+
+// MARK: - MovieCell
+
+class MovieCell: UICollectionViewCell {
+    
+    // MARK: - Properties
+    private let imageView = UIImageView()
+    
+    // MARK: - Initializers
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        imageView.frame = bounds
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        addSubview(imageView)
+    }
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        fatalError("init?(coder aDecoder: NSCoder) has not been implemented")
+    }
+    
+    // MARK: - Lifecycle
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.kf.cancelDownloadTask()
+        imageView.image = nil
+    }
+    
+    // MARK: - Methods
+    func configure(with url: URL) {
+        imageView.kf.setImage(with: url)
     }
 }

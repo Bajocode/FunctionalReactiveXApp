@@ -35,25 +35,25 @@ class TmdbService {
                 return jsonGenres.flatMap(Genre.init).sorted { $0.name < $1.name }
             }
             .shareReplay(1)
-            // shareReplay(1) relays all elements to the first subscriber.
-            // It then replays the last received element to any new subscriber, without re- requesting the data. It acts much like a cache.
     }()
     
     
     // MARK: - Methods
     
-    // Download in paralel
+    // Public
     static func popularMovies() -> Observable<[Movie]> {
         let observables = Array(1...20).map { popularMovies(page: Int($0)) }
-        // observable of observables.
         return Observable.from(observables)
-            // subscribes to each observable emitted by the source observable and relays all emitted elements
             .merge()
-            // reduce the result to an array: add new array to  existing array and return final state
             .reduce([]) { running, new in
                 running + new
         }
     }
+    static func posterURL(with path: String) -> URL {
+        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
+    }
+    
+    // Private
     private static func popularMovies(page: Int) -> Observable<[Movie]> {
         return request(endpoint: moviesEndpoint,
                        params: ["api_key": apiKey,
@@ -65,8 +65,6 @@ class TmdbService {
                 return jsonMovies.flatMap(Movie.init)
             }
     }
-    
-    // url --> request --> JSONObject
     private static func request(endpoint: String, params: [String:Any] = [:]) -> Observable<JSONObject> {
         do {
             // Url

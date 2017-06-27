@@ -15,6 +15,7 @@ struct Movie {
     let id: Int
     let title: String
     let year: Int
+    let posterURL: URL
     let genres: [Int]
     
     
@@ -25,12 +26,14 @@ struct Movie {
             let id = json["id"] as? Int,
             let title = json["title"] as? String,
             let genres = json["genre_ids"] as? [Int],
+            let posterPath = json["poster_path"] as? String,
             let dateString = json["release_date"] as? String else {
                 return nil
         }
         self.id = id
         self.title = title
         self.genres = genres
+        self.posterURL = TmdbService.posterURL(with: posterPath)
         guard let date = TmdbService.yearFormatter.date(from: dateString) else { return nil }
         self.year = Calendar.current.component(.year, from: date)
     }
