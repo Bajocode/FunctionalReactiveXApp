@@ -11,11 +11,13 @@ import Kingfisher
 
 class MovieCollectionViewCell: UICollectionViewCell {
     
-    
     // MARK: - Properties
+    
     private let imageView = UIImageView()
     
+    
     // MARK: - Initializers
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         imageView.frame = bounds
@@ -28,14 +30,18 @@ class MovieCollectionViewCell: UICollectionViewCell {
         fatalError("init?(coder aDecoder: NSCoder) has not been implemented")
     }
     
+    
     // MARK: - Lifecycle
+    
     override func prepareForReuse() {
         super.prepareForReuse()
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
     }
     
+    
     // MARK: - Methods
+    
     func configure(with url: URL) {
         let processor = RoundCornerImageProcessor(cornerRadius: 20)
         imageView.kf.indicatorType = .activity

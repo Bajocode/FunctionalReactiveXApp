@@ -18,6 +18,7 @@ struct Genre {
     
     
     // MARK: - Initializers
+    
     init?(json: JSONObject) {
         guard
             let id = json["id"] as? Int,

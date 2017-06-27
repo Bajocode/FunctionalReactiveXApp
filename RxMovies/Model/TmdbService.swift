@@ -25,9 +25,8 @@ class TmdbService {
         formatter.dateFormat = "yyyy-mm-dd"
         return formatter
     }()
-    // fetching them asynchronously, so the best way to expose them is with an Observable
     static var genres: Observable<[Genre]> = {
-        return TmdbService.request(endpoint: genresEndpoint, params: ["api_key": apiKey])
+        return TmdbService.genericRequest(withEndpoint: genresEndpoint, params: ["api_key": apiKey])
             .map { jsonObject in
                 guard let jsonGenres = jsonObject["genres"] as? [JSONObject] else {
                     throw TmdbError.invalidJSON(genresEndpoint)
@@ -55,7 +54,7 @@ class TmdbService {
     
     // Private
     private static func popularMovies(page: Int) -> Observable<[Movie]> {
-        return request(endpoint: moviesEndpoint,
+        return genericRequest(withEndpoint: moviesEndpoint,
                        params: ["api_key": apiKey,
                                 "page": page])
             .map { jsonObject in
@@ -65,7 +64,8 @@ class TmdbService {
                 return jsonMovies.flatMap(Movie.init)
             }
     }
-    private static func request(endpoint: String, params: [String:Any] = [:]) -> Observable<JSONObject> {
+    
+    private static func genericRequest(withEndpoint endpoint: String, params: [String:Any] = [:]) -> Observable<JSONObject> {
         do {
             // Url
             guard

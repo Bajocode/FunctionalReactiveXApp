@@ -14,6 +14,7 @@ class GenresViewController: UIViewController {
     
     // MARK: - Properties
     
+    // UI
     private lazy var tableView: UITableView = {
         let tv = UITableView()
         tv.dataSource = self; tv.delegate = self
@@ -23,6 +24,7 @@ class GenresViewController: UIViewController {
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         return tv
     }()
+    // Rx
     fileprivate let genres = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
     

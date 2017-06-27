@@ -15,14 +15,17 @@ class MoviesViewController: UIViewController {
     
     // MARK: - Properties
     
-    let movies = Variable<[Movie]>([])
-    fileprivate let filteredMovies = Variable<[Movie]>([])
-    private let year = Variable<Int>(2017)
-    fileprivate let cellID = "MovieCell"
-    private let disposeBag = DisposeBag()
+    // UI
     @IBOutlet private var slider: UISlider!
     @IBOutlet private var collectionView: UICollectionView!
     @IBOutlet private var yearLabel: UILabel!
+    fileprivate let cellID = "MovieCell"
+    // Rx
+    let movies = Variable<[Movie]>([])
+    fileprivate let filteredMovies = Variable<[Movie]>([])
+    private let year = Variable<Int>(2017)
+    private let disposeBag = DisposeBag()
+    
     
     // MARK: - Lifecycle
     
@@ -83,6 +86,20 @@ extension MoviesViewController: UICollectionViewDataSource {
         return cell
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // MARK: - CollectionView Layout
