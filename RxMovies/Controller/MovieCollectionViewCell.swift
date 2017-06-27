@@ -37,6 +37,8 @@ class MovieCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Methods
     func configure(with url: URL) {
-        imageView.kf.setImage(with: url)
+        let processor = RoundCornerImageProcessor(cornerRadius: 20)
+        imageView.kf.indicatorType = .activity
+        imageView.kf.setImage(with: url, options: [.transition(.fade(0.2)), .processor(processor)])
     }
 }

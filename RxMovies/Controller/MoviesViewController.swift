@@ -28,9 +28,9 @@ class MoviesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // TableView
+        // CollectionView
         collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
-        collectionView.dataSource = self
+        collectionView.dataSource = self; collectionView.delegate = self
         
         // Rx stream
         subscribeUIRefreshToNewData()
@@ -84,4 +84,21 @@ extension MoviesViewController: UICollectionViewDataSource {
     }
 }
 
-extension MoviesViewController
+
+// MARK: - CollectionView Layout
+
+extension MoviesViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = (view.bounds.width - 10) / 4
+        return CGSize(width: width, height: width*1.5)
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 2
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 2
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 2, bottom: 0, right: 2)
+    }
+}

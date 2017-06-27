@@ -17,6 +17,8 @@ class GenresViewController: UIViewController {
     private lazy var tableView: UITableView = {
         let tv = UITableView()
         tv.dataSource = self; tv.delegate = self
+        tv.separatorStyle = .none
+        tv.rowHeight = 64
         tv.frame = self.view.bounds
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         return tv
@@ -95,9 +97,9 @@ extension GenresViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath)
         let genre = genres.value[indexPath.row]
-        cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+        cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline).withSize(25)
         cell.textLabel?.textAlignment = .center
-        cell.textLabel?.text = "\(genre.name) (\(genre.movies.count))"
+        cell.textLabel?.text = "\(genre.name) (\(genre.movies.count))".uppercased()
         cell.textLabel?.textColor = genre.movies.isEmpty ? .lightGray : .black
         return cell
     }
