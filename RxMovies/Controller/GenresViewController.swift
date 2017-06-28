@@ -10,7 +10,7 @@ import UIKit
 import RxCocoa
 import RxSwift
 
-class GenresViewController: UIViewController {
+final class GenresViewController: UIViewController {
     
     // MARK: - Properties
     

@@ -10,7 +10,7 @@ import UIKit
 import RxCocoa
 import RxSwift
 
-class MoviesViewController: UIViewController {
+final class MoviesViewController: UIViewController {
     
     
     // MARK: - Properties
