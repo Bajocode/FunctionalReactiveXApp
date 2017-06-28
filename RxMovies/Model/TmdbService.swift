@@ -27,7 +27,7 @@ class TmdbService {
         return TmdbService.genericRequest(withEndPoint: .genres, params: ["api_key": apiKey])
             .map { jsonObject in
                 guard let jsonGenres = jsonObject["genres"] as? [JSONObject] else {
-                    throw TmdbError.invalidJSON(TmdbEndpoint.genres.rawValue)
+                    throw TmdbError.invalidJSON(TmdbEndpoint.genres.value)
                 }
                 return jsonGenres.flatMap(Genre.init).sorted { $0.name < $1.name }
             }
@@ -39,7 +39,7 @@ class TmdbService {
     
     // Public
     static func movies(forGenre genre: Genre) -> Observable<[Movie]> {
-        let observables = Array(1..<2).map { movies(forResultsPage: $0, endpoint: .discover, extraParams: ["genre_ids":[genre.id]])}
+        let observables = [1,2].map { movies(forResultsPage: $0, endpoint: .moviesForGenre(genre.id))}
         return Observable.from(observables)
             .merge()
             .reduce([]) { running, new in
@@ -61,30 +61,27 @@ class TmdbService {
     
     // Private
     
-    private static func movies(forResultsPage page: Int, endpoint: TmdbEndpoint, extraParams: [String:Any] = [:]) -> Observable<[Movie]> {
-        let params = [["api_key": apiKey, "page": page], extraParams]
-            .flatMap { $0 }.reduce([String:Any]()) { dict, newPair in
-                var copyDict = dict
-                copyDict.updateValue(newPair.value, forKey: newPair.key)
-                return copyDict
-        }
-        print(params)
-        return genericRequest(withEndPoint: endpoint, params: params)
+    private static func movies(forResultsPage page: Int, endpoint: TmdbEndpoint) -> Observable<[Movie]> {
+        return genericRequest(withEndPoint: endpoint,
+                              params: ["api_key": apiKey, "page": page])
             .map { jsonObject in
                 guard let jsonMovies = jsonObject["results"] as? [JSONObject] else {
-                    throw TmdbError.invalidJSON(endpoint.rawValue)
+                    print(jsonObject)
+                    throw TmdbError.invalidJSON(endpoint.value)
                 }
                 return jsonMovies.flatMap(Movie.init)
             }
     }
-    
+    static var count = 0
     private static func genericRequest(withEndPoint endpoint: TmdbEndpoint, params: [String:Any] = [:]) -> Observable<JSONObject> {
+        count += 1
+        print(count, " requests")
         do {
             // Url
             guard
-                let url = URL(string: baseURLString)?.appendingPathComponent(endpoint.rawValue),
+                let url = URL(string: baseURLString)?.appendingPathComponent(endpoint.value),
                 var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-                    throw TmdbError.invalidURL(endpoint.rawValue)
+                    throw TmdbError.invalidURL(endpoint.value)
             }
             components.queryItems = try params.flatMap { key, value in
                 guard let v = value as? CustomStringConvertible else {
@@ -92,15 +89,16 @@ class TmdbService {
                 }
                 return URLQueryItem(name: key, value: v.description)
             }
-            guard let finalURL = components.url else { throw TmdbError.invalidURL(endpoint.rawValue)}
+            guard let finalURL = components.url else { throw TmdbError.invalidURL(endpoint.value)}
             
             // Request
             let request = URLRequest(url: finalURL)
             return URLSession.shared.rx.response(request: request)
-                .map {_, data -> JSONObject in
+                .map {httpResponse, data -> JSONObject in
                     guard
                         let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
                         let mapResult = jsonObject as? JSONObject else {
+                            print(httpResponse)
                             throw TmdbError.invalidJSON(finalURL.absoluteString)
                     }
                     return mapResult
@@ -113,10 +111,17 @@ class TmdbService {
 
 
 // MARK: - Errors
-enum TmdbEndpoint: String {
-    case popularMovies = "/movie/popular"
-    case genres = "/genre/movie/list"
-    case discover = "/discover/movie"
+enum TmdbEndpoint {
+    case popularMovies
+    case genres
+    case moviesForGenre(Int)
+    var value: String {
+        switch self {
+            case .popularMovies: return "/movie/popular"
+            case .genres: return "/genre/movie/list"
+            case .moviesForGenre(let genreID): return "/genre/\(genreID)/movies"
+        }
+    }
 }
 enum TmdbError: Error {
     case invalidURL(String)

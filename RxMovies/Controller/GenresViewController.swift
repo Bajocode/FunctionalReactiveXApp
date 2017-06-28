@@ -60,7 +60,7 @@ final class GenresViewController: UIViewController {
                 TmdbService.movies(forGenre: $0)
             })
         }
-        .merge(maxConcurrent: 10)
+        .merge(maxConcurrent: 2)
         // regardless of the number of event download observables flatMap(_:) pushes to its observable, only two will be subscribed to at the same time. Since each event download makes two outgoing requests
         // Fetch and add movies to genres
         let genresWithMovies = genresObs.flatMap { genreArray in
