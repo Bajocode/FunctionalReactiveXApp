@@ -55,16 +55,21 @@ final class GenresViewController: UIViewController {
     private func startDownloadSplit() {
         // First get the categories.
         let genresObs = TmdbService.genres
-        let movies = genresObs.flatMap { genreArray in
+        let moviesObs = genresObs.flatMap { genreArray in
             return Observable.from(genreArray.map {
                 TmdbService.movies(forGenre: $0)
             })
         }
-        .merge()
-        let genresWithMovies = genresObs.flatMap { genresArray in
-            movies.scan(genresArray) { updated, movies in
+        .merge(maxConcurrent: 10)
+        // regardless of the number of event download observables flatMap(_:) pushes to its observable, only two will be subscribed to at the same time. Since each event download makes two outgoing requests
+        // Fetch and add movies to genres
+        let genresWithMovies = genresObs.flatMap { genreArray in
+            moviesObs.scan(genreArray) { updated, movies in
                 return updated.map { genre in
-                    let moviesForGenre = movies.filter {$0.genres.contains(genre.id)}
+                    let moviesForGenre = movies.filter { movie in
+                        movie.genres.contains(genre.id) &&
+                        !genre.movies.contains { $0.id == movie.id }
+                    }
                     if !moviesForGenre.isEmpty {
                         var genreCopy = genre
                         genreCopy.movies = genreCopy.movies + moviesForGenre

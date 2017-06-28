@@ -39,7 +39,12 @@ class TmdbService {
     
     // Public
     static func movies(forGenre genre: Genre) -> Observable<[Movie]> {
-        return movies(forResultsPage: 1, endpoint: .discover, extraParams: ["genre_ids":[genre.id]])
+        let observables = Array(1..<2).map { movies(forResultsPage: $0, endpoint: .discover, extraParams: ["genre_ids":[genre.id]])}
+        return Observable.from(observables)
+            .merge()
+            .reduce([]) { running, new in
+                running + new
+            }
     }
     static func popularMovies() -> Observable<[Movie]> {
         let observables = Array(1...20).map { movies(forResultsPage: Int($0), endpoint: .popularMovies) }
@@ -47,7 +52,7 @@ class TmdbService {
             .merge()
             .reduce([]) { running, new in
                 running + new
-        }
+            }
     }
     static func posterURL(with path: String) -> URL {
         return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
@@ -63,6 +68,7 @@ class TmdbService {
                 copyDict.updateValue(newPair.value, forKey: newPair.key)
                 return copyDict
         }
+        print(params)
         return genericRequest(withEndPoint: endpoint, params: params)
             .map { jsonObject in
                 guard let jsonMovies = jsonObject["results"] as? [JSONObject] else {
