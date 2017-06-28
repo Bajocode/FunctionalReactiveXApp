@@ -46,14 +46,42 @@ final class GenresViewController: UIViewController {
             .addDisposableTo(disposeBag)
         
         // Bind
-        startDownload()
+        startDownloadSplit()
     }
     
     
     // MARK: - Methods
     
+    private func startDownloadSplit() {
+        // First get the categories.
+        let genresObs = TmdbService.genres
+        let movies = genresObs.flatMap { genreArray in
+            return Observable.from(genreArray.map {
+                TmdbService.movies(forGenre: $0)
+            })
+        }
+        .merge()
+        let genresWithMovies = genresObs.flatMap { genresArray in
+            movies.scan(genresArray) { updated, movies in
+                return updated.map { genre in
+                    let moviesForGenre = movies.filter {$0.genres.contains(genre.id)}
+                    if !moviesForGenre.isEmpty {
+                        var genreCopy = genre
+                        genreCopy.movies = genreCopy.movies + moviesForGenre
+                        return genreCopy
+                    }
+                    return genre
+                }
+            }
+        }
+        genresObs
+            .concat(genresWithMovies)
+            .bindTo(genres)
+            .addDisposableTo(disposeBag)
+    }
+    
     // Fetch genres and movies and combine the genres in one observable
-    private func startDownload() {
+    private func startDownloadPopular() {
         // Fetch genres and fetch acompanies movies
         let genresObs = TmdbService.genres
         let moviesObs = TmdbService.popularMovies()
