@@ -4,6 +4,7 @@ target 'RxMovies' do
     pod 'RxSwift', '~> 3.1.0'
     pod 'RxCocoa', '~> 3.1.0'
     pod 'Kingfisher', '~> 3.0'
+    pod 'ContourProgressView'
 end
 
 # enable tracing resources

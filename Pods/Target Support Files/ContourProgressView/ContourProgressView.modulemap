@@ -1,0 +1,6 @@
+framework module ContourProgressView {
+  umbrella header "ContourProgressView-umbrella.h"
+
+  export *
+  module * { export * }
+}

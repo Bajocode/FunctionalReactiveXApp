@@ -7,8 +7,9 @@
 //
 
 import UIKit
-import RxCocoa
 import RxSwift
+import RxCocoa
+import ContourProgressView
 
 final class GenresViewController: UIViewController {
     
@@ -24,6 +25,7 @@ final class GenresViewController: UIViewController {
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         return tv
     }()
+    var progressView: ContourProgressView!
     // Rx
     fileprivate let genres = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
@@ -34,6 +36,10 @@ final class GenresViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(tableView)
+        let top = UIApplication.shared.statusBarFrame.height + navigationController!.navigationBar.bounds.height + 1
+        let frame = CGRect(x: 0, y: top, width: view.bounds.width, height: view.bounds.height - top)
+        progressView = ContourProgressView(frame: frame); progressView.lineWidth = 5
+        view.addSubview(progressView)
         
         // Update TableView everytime genres gets a new value
         genres
@@ -79,6 +85,24 @@ final class GenresViewController: UIViewController {
                 }
             }
         }
+        
+        // ProgressView
+        genresObs.flatMap { genres in
+            return genresWithMovies.scan(0) { count, _ in
+                return count + 1
+            }
+            .startWith(0)
+            .map { ($0, genres.count) }
+        }
+        .subscribe(onNext: { tuple in
+            DispatchQueue.main.async { [weak self] in
+                let progress = CGFloat(tuple.0) / CGFloat(tuple.1)
+                self?.progressView.progress = progress
+            }
+        })
+        .addDisposableTo(disposeBag)
+        
+        // Bind
         genresObs
             .concat(genresWithMovies)
             .bindTo(genres)
