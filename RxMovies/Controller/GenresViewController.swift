@@ -13,9 +13,9 @@ import ContourProgressView
 
 final class GenresViewController: UIViewController {
     
+    
     // MARK: - Properties
     
-    // UI
     private lazy var tableView: UITableView = {
         let tv = UITableView()
         tv.dataSource = self; tv.delegate = self
@@ -25,8 +25,12 @@ final class GenresViewController: UIViewController {
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         return tv
     }()
-    var progressView: ContourProgressView!
-    // Rx
+    private lazy var progressView: ContourProgressView = {
+        let top = UIApplication.shared.statusBarFrame.height + self.navigationController!.navigationBar.bounds.height
+        let frame = CGRect(x: 0, y: top, width: self.view.bounds.width, height: self.view.bounds.height - top)
+        let progressView = ContourProgressView(frame: frame); progressView.lineWidth = 5
+        return progressView
+    }()
     fileprivate let genres = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
     
@@ -36,9 +40,6 @@ final class GenresViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(tableView)
-        let top = UIApplication.shared.statusBarFrame.height + navigationController!.navigationBar.bounds.height + 1
-        let frame = CGRect(x: 0, y: top, width: view.bounds.width, height: view.bounds.height - top)
-        progressView = ContourProgressView(frame: frame); progressView.lineWidth = 5
         view.addSubview(progressView)
         
         // Update TableView everytime genres gets a new value
@@ -46,6 +47,7 @@ final class GenresViewController: UIViewController {
             .asObservable()
             .subscribe(onNext: { [weak self] _ in
                 DispatchQueue.main.async {
+                    print("New genre batch came in, refreshing table now!")
                     self?.tableView.reloadData()
                 }
             })
@@ -62,16 +64,14 @@ final class GenresViewController: UIViewController {
         // First get the categories.
         let genresObs = TmdbService.genres
         let moviesObs = genresObs.flatMap { genreArray in
-            return Observable.from(genreArray.map {
-                TmdbService.movies(forGenre: $0)
-            })
+            return Observable.from(genreArray.map { TmdbService.movies(forGenre: $0) })
         }
         .merge(maxConcurrent: 2)
-        // regardless of the number of event download observables flatMap(_:) pushes to its observable, only two will be subscribed to at the same time. Since each event download makes two outgoing requests
-        // Fetch and add movies to genres
+        
+        typealias GenreInfo = (genreCount: Int, genres: [Genre])
         let genresWithMovies = genresObs.flatMap { genreArray in
-            moviesObs.scan(genreArray) { updated, movies in
-                return updated.map { genre in
+            moviesObs.scan(GenreInfo(0, genreArray)) { genreInfo, movies in
+                return (genreInfo.genreCount + 1, genreInfo.genres.map { genre in
                     let moviesForGenre = movies.filter { movie in
                         movie.genres.contains(genre.id) &&
                         !genre.movies.contains { $0.id == movie.id }
@@ -82,29 +82,21 @@ final class GenresViewController: UIViewController {
                         return genreCopy
                     }
                     return genre
-                }
+                })
             }
         }
-        
-        // ProgressView
-        genresObs.flatMap { genres in
-            return genresWithMovies.scan(0) { count, _ in
-                return count + 1
-            }
-            .startWith(0)
-            .map { ($0, genres.count) }
-        }
-        .subscribe(onNext: { tuple in
-            DispatchQueue.main.async { [weak self] in
-                let progress = CGFloat(tuple.0) / CGFloat(tuple.1)
-                self?.progressView.progress = progress
+        .do(onNext: { [weak self] genreInfo in
+            DispatchQueue.main.async {
+                self?.progressView.progress = CGFloat(genreInfo.genreCount) / CGFloat(genreInfo.genres.count)
             }
         })
-        .addDisposableTo(disposeBag)
+        .do(onCompleted: { [weak self] in
+            DispatchQueue.main.async { self?.progressView.removeFromSuperview() }
+        })
         
         // Bind
         genresObs
-            .concat(genresWithMovies)
+            .concat(genresWithMovies.map { $0.genres })
             .bindTo(genres)
             .addDisposableTo(disposeBag)
     }

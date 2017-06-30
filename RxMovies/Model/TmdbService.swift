@@ -37,7 +37,7 @@ class TmdbService {
     
     // MARK: - Methods
     
-    // Public
+    
     static func movies(forGenre genre: Genre) -> Observable<[Movie]> {
         let observables = [1,2].map { movies(forResultsPage: $0, endpoint: .moviesForGenre(genre.id))}
         return Observable.from(observables)
@@ -46,24 +46,9 @@ class TmdbService {
                 running + new
             }
     }
-    static func popularMovies() -> Observable<[Movie]> {
-        let observables = Array(1...20).map { movies(forResultsPage: Int($0), endpoint: .popularMovies) }
-        return Observable.from(observables)
-            .merge()
-            .reduce([]) { running, new in
-                running + new
-            }
-    }
-    static func posterURL(with path: String) -> URL {
-        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
-    }
-    
-    
-    // Private
-    
+    // PRIVATE Call genericRequest and parse root json into Observable<[Movie]>
     private static func movies(forResultsPage page: Int, endpoint: TmdbEndpoint) -> Observable<[Movie]> {
-        return genericRequest(withEndPoint: endpoint,
-                              params: ["api_key": apiKey, "page": page])
+        return genericRequest(withEndPoint: endpoint, params: ["api_key": apiKey, "page": page])
             .map { jsonObject in
                 guard let jsonMovies = jsonObject["results"] as? [JSONObject] else {
                     print(jsonObject)
@@ -72,6 +57,7 @@ class TmdbService {
                 return jsonMovies.flatMap(Movie.init)
             }
     }
+    // PRIVATE Generic request
     static var count = 0
     private static func genericRequest(withEndPoint endpoint: TmdbEndpoint, params: [String:Any] = [:]) -> Observable<JSONObject> {
         count += 1
@@ -106,6 +92,18 @@ class TmdbService {
         } catch {
             return Observable.empty()
         }
+    }
+    
+    static func popularMovies() -> Observable<[Movie]> {
+        let observables = Array(1...20).map { movies(forResultsPage: Int($0), endpoint: .popularMovies) }
+        return Observable.from(observables)
+            .merge()
+            .reduce([]) { running, new in
+                running + new
+        }
+    }
+    static func posterURL(with path: String) -> URL {
+        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
     }
 }
 
