@@ -2,7 +2,7 @@
 
 ![Screenshots of the app](media/Header.png)
 
-An example of making network requests using RxSwift, RxCocoa and the TMDB movies API.
+Exploring and learning more about the world of reactive programming using RxSwift, RxCocoa and the TMDB movies API. I will gradually add more features while learning more about Rx.
 
 #### Install
 In a terminal window, cd into the root folder and run `$pod install` to install
