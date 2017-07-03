@@ -16,6 +16,7 @@ final class GenresViewController: UIViewController {
     
     // MARK: - Properties
     
+    // UI
     private lazy var tableView: UITableView = {
         let tv = UITableView()
         tv.dataSource = self; tv.delegate = self
@@ -28,9 +29,12 @@ final class GenresViewController: UIViewController {
     private lazy var progressView: ContourProgressView = {
         let top = UIApplication.shared.statusBarFrame.height + self.navigationController!.navigationBar.bounds.height
         let frame = CGRect(x: 0, y: top, width: self.view.bounds.width, height: self.view.bounds.height - top)
-        let progressView = ContourProgressView(frame: frame); progressView.lineWidth = 5
+        let progressView = ContourProgressView(frame: self.view.bounds)
+        progressView.lineWidth = 5
+        progressView.progressTintColor = Colors.primary
         return progressView
     }()
+    // Rx
     fileprivate let genres = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
     
@@ -54,13 +58,17 @@ final class GenresViewController: UIViewController {
             .addDisposableTo(disposeBag)
         
         // Bind
-        startDownloadSplit()
+        startDownload()
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.isHidden = true
+    }
+    override var prefersStatusBarHidden: Bool { return true }
     
     // MARK: - Methods
     
-    private func startDownloadSplit() {
+    private func startDownload() {
         // First get the categories.
         let genresObs = TmdbService.genres
         let moviesObs = genresObs.flatMap { genreArray in
@@ -68,6 +76,7 @@ final class GenresViewController: UIViewController {
         }
         .merge(maxConcurrent: 2)
         
+        // Insert movies into genres.movies
         typealias GenreInfo = (genreCount: Int, genres: [Genre])
         let genresWithMovies = genresObs.flatMap { genreArray in
             moviesObs.scan(GenreInfo(0, genreArray)) { genreInfo, movies in
@@ -87,36 +96,14 @@ final class GenresViewController: UIViewController {
         }
         .do(onNext: { [weak self] genreInfo in
             DispatchQueue.main.async {
-                self?.progressView.progress = CGFloat(genreInfo.genreCount) / CGFloat(genreInfo.genres.count)
+                let progress = CGFloat(genreInfo.genreCount) / CGFloat(genreInfo.genres.count)
+                self?.progressView.progress = progress
             }
-        })
-        .do(onCompleted: { [weak self] in
-            DispatchQueue.main.async { self?.progressView.removeFromSuperview() }
         })
         
         // Bind
         genresObs
             .concat(genresWithMovies.map { $0.genres })
-            .bindTo(genres)
-            .addDisposableTo(disposeBag)
-    }
-    
-    // Fetch genres and movies and combine the genres in one observable
-    private func startDownloadPopular() {
-        // Fetch genres and fetch acompanies movies
-        let genresObs = TmdbService.genres
-        let moviesObs = TmdbService.popularMovies()
-        let genresWithMovies = Observable.combineLatest(genresObs, moviesObs) { (genres, movies) -> [Genre] in
-            // CLosure executes with latest genres array from genres and movies Observable
-            return genres.map { genre in
-                var genreCopy = genre
-                genreCopy.movies = movies.filter { $0.genres.contains(genre.id) }
-                return genreCopy
-            }
-        }
-        // Bind items from the genres observable and genres from the genresWithMovies observable.
-        genresObs
-            .concat(genresWithMovies)
             .bindTo(genres)
             .addDisposableTo(disposeBag)
     }
@@ -148,7 +135,7 @@ extension GenresViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath)
         let genre = genres.value[indexPath.row]
-        cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline).withSize(25)
+        cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
         cell.textLabel?.textAlignment = .center
         cell.textLabel?.text = "\(genre.name) (\(genre.movies.count))".uppercased()
         cell.textLabel?.textColor = genre.movies.isEmpty ? .lightGray : .black

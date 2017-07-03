@@ -11,6 +11,7 @@ import Kingfisher
 
 class MovieCollectionViewCell: UICollectionViewCell {
     
+    
     // MARK: - Properties
     
     private let imageView = UIImageView()

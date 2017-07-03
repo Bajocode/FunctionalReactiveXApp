@@ -23,10 +23,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         let genresVC = GenresViewController()
         genresVC.title = "Genres"
+        // NavC
         let navC = UINavigationController(rootViewController: genresVC)
+        navC.navigationBar.tintColor = Colors.primary
+        // Window
         window!.rootViewController = navC
         window!.makeKeyAndVisible()
         return true
     }
 }
 
+
+// MARK: - UI Colors
+
+struct Colors {
+    static let primary = UIColor(hue:0.97, saturation:0.80, brightness:0.99, alpha:1.00)
+}

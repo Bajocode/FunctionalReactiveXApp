@@ -14,6 +14,7 @@ typealias JSONObject = [String:Any]
 
 class TmdbService {
     
+    
     // MARK: - Properties
     
     private static let baseURLString = "https://api.themoviedb.org/3"
@@ -37,7 +38,9 @@ class TmdbService {
     
     // MARK: - Methods
     
-    
+    static func posterURL(with path: String) -> URL {
+        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
+    }
     static func movies(forGenre genre: Genre) -> Observable<[Movie]> {
         let observables = [1,2].map { movies(forResultsPage: $0, endpoint: .moviesForGenre(genre.id))}
         return Observable.from(observables)
@@ -46,7 +49,6 @@ class TmdbService {
                 running + new
             }
     }
-    // PRIVATE Call genericRequest and parse root json into Observable<[Movie]>
     private static func movies(forResultsPage page: Int, endpoint: TmdbEndpoint) -> Observable<[Movie]> {
         return genericRequest(withEndPoint: endpoint, params: ["api_key": apiKey, "page": page])
             .map { jsonObject in
@@ -57,11 +59,11 @@ class TmdbService {
                 return jsonMovies.flatMap(Movie.init)
             }
     }
-    // PRIVATE Generic request
-    static var count = 0
+    
+    
+    // Generic request: endPoint -> root JSON object
+    
     private static func genericRequest(withEndPoint endpoint: TmdbEndpoint, params: [String:Any] = [:]) -> Observable<JSONObject> {
-        count += 1
-        print(count, " requests")
         do {
             // Url
             guard
@@ -93,22 +95,11 @@ class TmdbService {
             return Observable.empty()
         }
     }
-    
-    static func popularMovies() -> Observable<[Movie]> {
-        let observables = Array(1...20).map { movies(forResultsPage: Int($0), endpoint: .popularMovies) }
-        return Observable.from(observables)
-            .merge()
-            .reduce([]) { running, new in
-                running + new
-        }
-    }
-    static func posterURL(with path: String) -> URL {
-        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
-    }
 }
 
 
-// MARK: - Errors
+// MARK: - Tmdb enums
+
 enum TmdbEndpoint {
     case popularMovies
     case genres

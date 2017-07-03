@@ -19,6 +19,7 @@ final class MoviesViewController: UIViewController {
     @IBOutlet private var slider: UISlider!
     @IBOutlet private var collectionView: UICollectionView!
     @IBOutlet private var yearLabel: UILabel!
+    @IBOutlet var movieCountLabel: UILabel!
     fileprivate let cellID = "MovieCell"
     // Rx
     let movies = Variable<[Movie]>([])
@@ -31,6 +32,7 @@ final class MoviesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        slider.tintColor = Colors.primary
         // CollectionView
         collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
         collectionView.dataSource = self; collectionView.delegate = self
@@ -38,6 +40,10 @@ final class MoviesViewController: UIViewController {
         // Rx stream
         subscribeUIRefreshToNewData()
         bindYearFilter()
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.isHidden = false
     }
     
     
@@ -48,6 +54,7 @@ final class MoviesViewController: UIViewController {
         filteredMovies.asObservable()
             .subscribe(onNext: { [weak self] _ in
                 DispatchQueue.main.async {
+                    self?.movieCountLabel.text = "\(self?.filteredMovies.value.count ?? 0) Movies"
                     self?.collectionView.reloadData()
                 }
             })
@@ -86,20 +93,6 @@ extension MoviesViewController: UICollectionViewDataSource {
         return cell
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // MARK: - CollectionView Layout
