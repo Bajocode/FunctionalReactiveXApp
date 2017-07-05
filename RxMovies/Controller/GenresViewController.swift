@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 import ContourProgressView
 
+
 final class GenresViewController: UIViewController {
     
     
@@ -39,6 +40,7 @@ final class GenresViewController: UIViewController {
     // Rx
     fileprivate let genres = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
+    typealias GenreInfo = (genreCount: Int, genres: [Genre])
     
     
     // MARK: - Lifecycle
@@ -48,15 +50,31 @@ final class GenresViewController: UIViewController {
         view.addSubview(tableView)
         view.addSubview(progressView)
         
+        // Bind result to genres Variable and retrieve Genres filled with fetched movies
+        let genresObservable = TmdbService.genres
+        let moviesObservable = genresObservable.flatMap { genreArray in
+            return Observable.from(genreArray.map { TmdbService.movies(forGenre: $0) })
+            }
+            .merge(maxConcurrent: 2)
+        let genresWithMovies = genres(genresObservable, combinedWithMovies: moviesObservable)
+        
+        // Fetch genres -> Fetch movies & add to genres -> bind updated genres stream to genres Variable
+        genresObservable
+            .concat(genresWithMovies.map { $0.genres })
+            .bindTo(genres)
+            .addDisposableTo(disposeBag)
+        
+        // Drive UI with download progress
+        let progressDriver = genresWithMovies.asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
+            .map { CGFloat($0.genreCount) / CGFloat($0.genres.count) }
+        progressDriver.drive(progressView.rx.progress).addDisposableTo(disposeBag)
+        
         // Bind genres variable to tableView reload
         genres
             .asObservable()
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in self?.tableView.reloadData() })
             .addDisposableTo(disposeBag)
-        
-        // Bind result to genres Variable
-        startDownload()
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -67,18 +85,10 @@ final class GenresViewController: UIViewController {
     
     // MARK: - Methods
     
-    private func startDownload() {
-        // First get the categories.
-        let genresObs = TmdbService.genres
-        let moviesObs = genresObs.flatMap { genreArray in
-            return Observable.from(genreArray.map { TmdbService.movies(forGenre: $0) })
-        }
-        .merge(maxConcurrent: 2)
-        
-        // Insert movies into genres.movies
-        typealias GenreInfo = (genreCount: Int, genres: [Genre])
-        let genresWithMovies = genresObs.flatMap { genreArray in
-            moviesObs.scan(GenreInfo(0, genreArray)) { genreInfo, movies in
+    private func genres(_ genres: Observable<[Genre]>, combinedWithMovies movies: Observable<[Movie]>) -> Observable<GenreInfo> {
+        // Fetch and insert movies into genres.movies
+        return genres.flatMap { genreArray in
+            movies.scan(GenreInfo(0, genreArray)) { genreInfo, movies in
                 return (genreInfo.genreCount + 1, genreInfo.genres.map { genre in
                     let moviesForGenre = movies.filter { movie in
                         movie.genres.contains(genre.id) &&
@@ -93,18 +103,6 @@ final class GenresViewController: UIViewController {
                 })
             }
         }
-        .asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
-        
-        // Bind updated genres observable to genres Variable
-        genresObs
-            .concat(genresWithMovies.map { $0.genres })
-            .bindTo(genres)
-            .addDisposableTo(disposeBag)
-        
-        // Drive UI
-        genresWithMovies.map { CGFloat($0.genreCount) / CGFloat($0.genres.count) }
-            .drive(progressView.rx.progress)
-            .addDisposableTo(disposeBag)
     }
 }
 
