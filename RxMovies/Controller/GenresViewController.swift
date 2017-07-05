@@ -24,21 +24,29 @@ final class GenresViewController: UIViewController {
         tv.separatorStyle = .none
         tv.rowHeight = 64
         tv.frame = self.view.bounds
+        tv.contentInset = UIEdgeInsets(top: 32, left: 0, bottom: 32, right: 0)
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         return tv
     }()
     private lazy var progressView: ContourProgressView = {
         let top = UIApplication.shared.statusBarFrame.height + self.navigationController!.navigationBar.bounds.height
         let frame = CGRect(x: 0, y: top, width: self.view.bounds.width, height: self.view.bounds.height - top)
-        let progressView = ContourProgressView(frame: self.view.bounds)
+        let progressView = ContourProgressView(frame: frame)
         progressView.lineWidth = 5
         progressView.progressTintColor = Colors.primary
         return progressView
     }()
+    private let progressLabel: UILabel = {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 30))
+        label.textAlignment = .center
+        label.font = UIFont.preferredFont(forTextStyle: .body)
+        label.textColor = .lightGray
+        return label
+    }()
 
-    
+
     // Rx
-    fileprivate let genres = Variable<[Genre]>([])
+    fileprivate let genresState = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
     typealias GenreInfo = (genreCount: Int, genres: [Genre])
     
@@ -49,6 +57,7 @@ final class GenresViewController: UIViewController {
         super.viewDidLoad()
         view.addSubview(tableView)
         view.addSubview(progressView)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: progressLabel)
         
         // Bind result to genres Variable and retrieve Genres filled with fetched movies
         let genresObservable = TmdbService.genres
@@ -58,29 +67,29 @@ final class GenresViewController: UIViewController {
             .merge(maxConcurrent: 2)
         let genresWithMovies = genres(genresObservable, combinedWithMovies: moviesObservable)
         
+        
         // Fetch genres -> Fetch movies & add to genres -> bind updated genres stream to genres Variable
         genresObservable
             .concat(genresWithMovies.map { $0.genres })
-            .bindTo(genres)
+            .bindTo(genresState)
             .addDisposableTo(disposeBag)
         
-        // Drive UI with download progress
-        let progressDriver = genresWithMovies.asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
+        
+        // Drive UI with exact download progress and event of fetching
+        let progressDriver = genresWithMovies
+            .asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
             .map { CGFloat($0.genreCount) / CGFloat($0.genres.count) }
         progressDriver.drive(progressView.rx.progress).addDisposableTo(disposeBag)
+        progressDriver.map { "\(Int($0 * 100))%" }.drive(progressLabel.rx.text).addDisposableTo(disposeBag)
+        
         
         // Bind genres variable to tableView reload
-        genres
+        genresState
             .asObservable()
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in self?.tableView.reloadData() })
             .addDisposableTo(disposeBag)
     }
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.navigationBar.isHidden = true
-    }
-    override var prefersStatusBarHidden: Bool { return true }
     
     
     // MARK: - Methods
@@ -111,7 +120,7 @@ final class GenresViewController: UIViewController {
 
 extension GenresViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedGenre = genres.value[indexPath.row]
+        let selectedGenre = genresState.value[indexPath.row]
         if !selectedGenre.movies.isEmpty {
             let moviesVC = MoviesViewController()
             moviesVC.title = selectedGenre.name
@@ -127,11 +136,11 @@ extension GenresViewController: UITableViewDelegate {
 
 extension GenresViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return genres.value.count
+        return genresState.value.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath)
-        let genre = genres.value[indexPath.row]
+        let genre = genresState.value[indexPath.row]
         cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
         cell.textLabel?.textAlignment = .center
         cell.textLabel?.text = "\(genre.name) (\(genre.movies.count))".uppercased()

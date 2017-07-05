@@ -19,14 +19,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Methods
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Configure window
+        // Configure window with NavC
         window = UIWindow(frame: UIScreen.main.bounds)
         let genresVC = GenresViewController()
         genresVC.title = "Genres"
-        // NavC
         let navC = UINavigationController(rootViewController: genresVC)
         navC.navigationBar.tintColor = Colors.primary
-        // Window
         window!.rootViewController = navC
         window!.makeKeyAndVisible()
         return true
