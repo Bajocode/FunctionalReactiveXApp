@@ -61,9 +61,6 @@
                                 <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2017" minValue="1970" maxValue="2017" translatesAutoresizingMaskIntoConstraints="NO" id="R2R-7T-F4j">
                                     <rect key="frame" x="129.5" y="0.0" width="199.5" height="42.5"/>
                                     <color key="tintColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                    <connections>
-                                        <action selector="sliderValueChanged:" destination="-1" eventType="valueChanged" id="hCg-ru-NF6"/>
-                                    </connections>
                                 </slider>
                             </subviews>
                         </stackView>

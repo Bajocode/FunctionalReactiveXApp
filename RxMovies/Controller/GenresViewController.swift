@@ -67,21 +67,18 @@ final class GenresViewController: UIViewController {
             .merge(maxConcurrent: 2)
         let genresWithMovies = genres(genresObservable, combinedWithMovies: moviesObservable)
         
-        
         // Fetch genres -> Fetch movies & add to genres -> bind updated genres stream to genres Variable
         genresObservable
             .concat(genresWithMovies.map { $0.genres })
             .bindTo(genresState)
             .addDisposableTo(disposeBag)
         
-        
-        // Drive UI with exact download progress and event of fetching
+        // Drive UI with download progress
         let progressDriver = genresWithMovies
             .asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
             .map { CGFloat($0.genreCount) / CGFloat($0.genres.count) }
         progressDriver.drive(progressView.rx.progress).addDisposableTo(disposeBag)
         progressDriver.map { "\(Int($0 * 100))%" }.drive(progressLabel.rx.text).addDisposableTo(disposeBag)
-        
         
         // Bind genres variable to tableView reload
         genresState

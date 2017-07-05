@@ -24,7 +24,6 @@ final class MoviesViewController: UIViewController {
     // Rx
     let movies = Variable<[Movie]>([])
     fileprivate let filteredMovies = Variable<[Movie]>([])
-    private let year = Variable<Int>(2017)
     private let disposeBag = DisposeBag()
     
     
@@ -33,13 +32,31 @@ final class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         slider.tintColor = Colors.primary
+        
         // CollectionView
         collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
         collectionView.dataSource = self; collectionView.delegate = self
         
         // Rx stream
+        
+        let sliderInput = slider.rx.controlEvent(.valueChanged).asObservable()
+            .map { Int(self.slider.value) }
+            .startWith(2017)
+            .asDriver(onErrorJustReturn: 2017)
+        
+        sliderInput
+            .map { "\($0)" }
+            .drive(yearLabel.rx.text)
+            .addDisposableTo(disposeBag)
+        
+        Observable.combineLatest(sliderInput.asObservable(), movies.asObservable()) { (year, movies) -> [Movie] in
+            return movies.filter {
+                $0.year >= year }.sorted { $0.title < $1.title }
+            }
+            .bindTo(filteredMovies)
+            .addDisposableTo(disposeBag)
+        
         subscribeUIRefreshToNewData()
-        bindYearFilter()
     }
     
     
@@ -48,31 +65,12 @@ final class MoviesViewController: UIViewController {
     private func subscribeUIRefreshToNewData() {
         // Update tableView everytime movies gets a new value
         filteredMovies.asObservable()
+            .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
-                DispatchQueue.main.async {
-                    self?.movieCountLabel.text = "\(self?.filteredMovies.value.count ?? 0) Movies"
-                    self?.collectionView.reloadData()
-                }
+                self?.movieCountLabel.text = "\(self?.filteredMovies.value.count ?? 0) Movies"
+                self?.collectionView.reloadData()
             })
             .addDisposableTo(disposeBag)
-    }
-    
-    private func bindYearFilter() {
-        // Filter with minimum movie year treshHold
-        Observable.combineLatest(year.asObservable(), movies.asObservable()) { (year, movies) -> [Movie] in
-            return movies.filter {
-                $0.year >= year }.sorted { $0.title < $1.title }
-            }
-            .bindTo(filteredMovies)
-            .addDisposableTo(disposeBag)
-    }
-    
-    
-    // MARK: - Actions
-    
-    @IBAction func sliderValueChanged(_ sender: UISlider) {
-        year.value = Int(sender.value)
-        yearLabel.text = "\(year.value)"
     }
 }
 
