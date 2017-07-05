@@ -46,18 +46,14 @@ final class GenresViewController: UIViewController {
         view.addSubview(tableView)
         view.addSubview(progressView)
         
-        // Update TableView everytime genres gets a new value
+        // Drive genres variable to tableView reload
         genres
             .asObservable()
-            .subscribe(onNext: { [weak self] _ in
-                DispatchQueue.main.async {
-                    print("New genre batch came in, refreshing table now!")
-                    self?.tableView.reloadData()
-                }
-            })
+            .observeOn(MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in self?.tableView.reloadData() })
             .addDisposableTo(disposeBag)
         
-        // Bind
+        // Bind result to genres Variable
         startDownload()
     }
     override func viewWillAppear(_ animated: Bool) {
