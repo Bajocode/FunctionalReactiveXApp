@@ -34,6 +34,7 @@ final class GenresViewController: UIViewController {
         progressView.progressTintColor = Colors.primary
         return progressView
     }()
+    
     // Rx
     fileprivate let genres = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
@@ -46,7 +47,7 @@ final class GenresViewController: UIViewController {
         view.addSubview(tableView)
         view.addSubview(progressView)
         
-        // Drive genres variable to tableView reload
+        // Bind genres variable to tableView reload
         genres
             .asObservable()
             .observeOn(MainScheduler.instance)
@@ -61,6 +62,7 @@ final class GenresViewController: UIViewController {
         navigationController?.navigationBar.isHidden = true
     }
     override var prefersStatusBarHidden: Bool { return true }
+    
     
     // MARK: - Methods
     
@@ -90,14 +92,15 @@ final class GenresViewController: UIViewController {
                 })
             }
         }
+        .observeOn(MainScheduler.instance)
+        
+        // Update progressView
         .do(onNext: { [weak self] genreInfo in
-            DispatchQueue.main.async {
-                let progress = CGFloat(genreInfo.genreCount) / CGFloat(genreInfo.genres.count)
-                self?.progressView.progress = progress
-            }
+            let progress = CGFloat(genreInfo.genreCount) / CGFloat(genreInfo.genres.count)
+            self?.progressView.progress = progress
         })
         
-        // Bind
+        // Bind updated genres observable to genres Variable
         genresObs
             .concat(genresWithMovies.map { $0.genres })
             .bindTo(genres)
