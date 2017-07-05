@@ -34,6 +34,7 @@ final class GenresViewController: UIViewController {
         progressView.progressTintColor = Colors.primary
         return progressView
     }()
+
     
     // Rx
     fileprivate let genres = Variable<[Genre]>([])
@@ -92,18 +93,17 @@ final class GenresViewController: UIViewController {
                 })
             }
         }
-        .observeOn(MainScheduler.instance)
-        
-        // Update progressView
-        .do(onNext: { [weak self] genreInfo in
-            let progress = CGFloat(genreInfo.genreCount) / CGFloat(genreInfo.genres.count)
-            self?.progressView.progress = progress
-        })
+        .asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
         
         // Bind updated genres observable to genres Variable
         genresObs
             .concat(genresWithMovies.map { $0.genres })
             .bindTo(genres)
+            .addDisposableTo(disposeBag)
+        
+        // Drive UI
+        genresWithMovies.map { CGFloat($0.genreCount) / CGFloat($0.genres.count) }
+            .drive(progressView.rx.progress)
             .addDisposableTo(disposeBag)
     }
 }
