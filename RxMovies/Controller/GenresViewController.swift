@@ -34,6 +34,7 @@ final class GenresViewController: UIViewController {
         let progressView = ContourProgressView(frame: frame)
         progressView.lineWidth = 5
         progressView.progressTintColor = Colors.primary
+        progressView.trackTintColor = .lightGray
         return progressView
     }()
     private let progressLabel: UILabel = {
@@ -66,6 +67,7 @@ final class GenresViewController: UIViewController {
             }
             .merge(maxConcurrent: 2)
         let genresWithMovies = genres(genresObservable, combinedWithMovies: moviesObservable)
+            .shareReplay(1)
         
         // Fetch genres -> Fetch movies & add to genres -> bind updated genres stream to genres Variable
         genresObservable
