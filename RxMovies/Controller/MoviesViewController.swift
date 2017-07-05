@@ -32,12 +32,10 @@ final class MoviesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         slider.tintColor = Colors.primary
-        
-        // CollectionView
         collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
         collectionView.dataSource = self; collectionView.delegate = self
         
-        // Rx stream
+        // Slider stream
         
         let sliderInput = slider.rx.controlEvent(.valueChanged).asObservable()
             .map { Int(self.slider.value) }
