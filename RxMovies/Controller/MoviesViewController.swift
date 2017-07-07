@@ -40,18 +40,18 @@ final class MoviesViewController: UIViewController {
         let sliderInput = slider.rx.controlEvent(.valueChanged).asObservable()
             .map { Int(self.slider.value) }
             .startWith(2017)
-            .asDriver(onErrorJustReturn: 2017)
         
-        sliderInput
-            .map { "\($0)" }
-            .drive(yearLabel.rx.text)
-            .addDisposableTo(disposeBag)
-        
-        Observable.combineLatest(sliderInput.asObservable(), movies.asObservable()) { (year, movies) -> [Movie] in
+        Observable.combineLatest(sliderInput, movies.asObservable()) { (year, movies) -> [Movie] in
             return movies.filter {
                 $0.year >= year }.sorted { $0.title < $1.title }
             }
             .bindTo(filteredMovies)
+            .addDisposableTo(disposeBag)
+        
+        sliderInput
+            .asDriver(onErrorJustReturn: 2017)
+            .map { "\($0)" }
+            .drive(yearLabel.rx.text)
             .addDisposableTo(disposeBag)
         
         subscribeUIRefreshToNewData()

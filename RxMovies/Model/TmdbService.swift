@@ -80,17 +80,27 @@ class TmdbService {
             guard let finalURL = components.url else { throw TmdbError.invalidURL(endpoint.value)}
             
             // Request
-            let request = URLRequest(url: finalURL)
-            return URLSession.shared.rx.response(request: request)
-                .map {httpResponse, data -> JSONObject in
-                    guard
-                        let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-                        let mapResult = jsonObject as? JSONObject else {
-                            print(httpResponse)
+            let requestObservable: Observable<URLRequest> = Observable.create() { observer in
+                observer.onNext(URLRequest(url: finalURL)); observer.onCompleted()
+                return Disposables.create()
+            }
+            return requestObservable.flatMap { request in
+                return URLSession.shared.rx.response(request: request).map { response, data in
+                    switch response.statusCode {
+                    case 200..<300:
+                        guard
+                            let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+                            let mapResult = jsonObject as? JSONObject else {
+                                print(response)
                             throw TmdbError.invalidJSON(finalURL.absoluteString)
+                        }
+                        return mapResult
+                    case 401: throw TmdbError.invalidKey
+                    case 400..<500: throw TmdbError.dataNotFound
+                    default: throw TmdbError.serverFailure
                     }
-                    return mapResult
                 }
+            }
         } catch {
             return Observable.empty()
         }
@@ -116,4 +126,7 @@ enum TmdbError: Error {
     case invalidURL(String)
     case invalidParameter(String, Any)
     case invalidJSON(String)
+    case invalidKey
+    case dataNotFound
+    case serverFailure
 }
