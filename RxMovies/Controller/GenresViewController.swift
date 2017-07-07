@@ -69,6 +69,7 @@ final class GenresViewController: UIViewController {
         let genresWithMovies = genres(genresObservable, combinedWithMovies: moviesObservable)
             .shareReplay(1)
         
+        
         // Fetch genres -> Fetch movies & add to genres -> bind updated genres stream to genres Variable
         genresObservable
             .concat(genresWithMovies.map { $0.genres })

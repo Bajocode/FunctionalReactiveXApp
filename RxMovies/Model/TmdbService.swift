@@ -12,7 +12,7 @@ import RxCocoa
 
 typealias JSONObject = [String:Any]
 
-class TmdbService {
+struct TmdbService {
     
     
     // MARK: - Properties
@@ -34,6 +34,10 @@ class TmdbService {
             }
             .shareReplay(1)
     }()
+    
+    
+    // MARK: - Initializers
+    private init() {}
     
     
     // MARK: - Methods
