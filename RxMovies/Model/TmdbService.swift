@@ -36,14 +36,10 @@ struct TmdbService {
     }()
     
     
-    // MARK: - Initializers
-    private init() {}
-    
-    
     // MARK: - Methods
     
-    static func posterURL(with path: String) -> URL {
-        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
+    static func movies(forSearchText text: String) -> Observable<[Movie]> {
+        return movies(forResultsPage: 1, endpoint: .search, extraParams: ["query": text])
     }
     static func movies(forGenre genre: Genre) -> Observable<[Movie]> {
         let observables = [1,2].map { movies(forResultsPage: $0, endpoint: .moviesForGenre(genre.id))}
@@ -53,8 +49,11 @@ struct TmdbService {
                 running + new
             }
     }
-    private static func movies(forResultsPage page: Int, endpoint: TmdbEndpoint) -> Observable<[Movie]> {
-        return genericRequest(withEndPoint: endpoint, params: ["api_key": apiKey, "page": page])
+    private static func movies(forResultsPage page: Int, endpoint: TmdbEndpoint, extraParams: [String:Any] = [:]) -> Observable<[Movie]> {
+        // Merge params
+        var params: [String:Any] = ["api_key": apiKey, "page": page]
+        extraParams.forEach { (key,value) in params[key] = value }
+        return genericRequest(withEndPoint: endpoint, params: params)
             .map { jsonObject in
                 guard let jsonMovies = jsonObject["results"] as? [JSONObject] else {
                     print(jsonObject)
@@ -62,6 +61,9 @@ struct TmdbService {
                 }
                 return jsonMovies.flatMap(Movie.init)
             }
+    }
+    static func posterURL(with path: String) -> URL {
+        return URL(string: "https://image.tmdb.org/t/p/w342/\(path)")!
     }
     
     
@@ -118,11 +120,13 @@ enum TmdbEndpoint {
     case popularMovies
     case genres
     case moviesForGenre(Int)
+    case search
     var value: String {
         switch self {
             case .popularMovies: return "/movie/popular"
             case .genres: return "/genre/movie/list"
             case .moviesForGenre(let genreID): return "/genre/\(genreID)/movies"
+            case .search: return "/search/movie"
         }
     }
 }

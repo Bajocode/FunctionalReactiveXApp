@@ -24,7 +24,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let genresVC = GenresViewController()
         genresVC.title = "Genres"
         let navC = UINavigationController(rootViewController: genresVC)
-        navC.navigationBar.tintColor = Colors.primary
+        let appearance = UINavigationBar.appearance()
+        appearance.tintColor = Colors.primary
         window!.rootViewController = navC
         window!.makeKeyAndVisible()
         return true

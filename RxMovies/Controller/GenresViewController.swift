@@ -44,7 +44,10 @@ final class GenresViewController: UIViewController {
         label.textColor = .lightGray
         return label
     }()
-
+    private lazy var searchButton: UIBarButtonItem = {
+        return UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(self.searchButtonPressed))
+    }()
+    
 
     // Rx
     fileprivate let genresState = Variable<[Genre]>([])
@@ -56,9 +59,7 @@ final class GenresViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.addSubview(tableView)
-        view.addSubview(progressView)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: progressLabel)
+        configureUI()
         
         // Bind result to genres Variable and retrieve Genres filled with fetched movies
         let genresObservable = TmdbService.genres
@@ -112,6 +113,21 @@ final class GenresViewController: UIViewController {
                 })
             }
         }
+    }
+    
+    private func configureUI() {
+        view.addSubview(tableView)
+        view.addSubview(progressView)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: progressLabel)
+        navigationItem.rightBarButtonItem = searchButton
+    }
+    
+    
+    // MARK: - Actions
+    
+    func searchButtonPressed() {
+        let searchVC = SearchViewController(collectionViewLayout: UICollectionViewFlowLayout(bounds: UIScreen.main.bounds))
+        present(UINavigationController(rootViewController: searchVC), animated: true, completion: nil)
     }
 }
 
