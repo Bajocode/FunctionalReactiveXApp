@@ -9,6 +9,11 @@
 import UIKit
 import RxSwift
 
+var searchCache = [String: [Movie]]() {
+    didSet {
+        print(searchCache.keys)
+    }
+}
 class SearchViewController: UICollectionViewController {
     
     
@@ -25,21 +30,21 @@ class SearchViewController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        collectionView!.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
-        collectionView?.backgroundColor = .white
-        searchController.searchResultsUpdater = self
-        searchController.dimsBackgroundDuringPresentation = false
-        searchController.hidesNavigationBarDuringPresentation = false
-        definesPresentationContext = true
-        navigationItem.titleView = searchController.searchBar
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(cancelButtonPressed))
-        navigationItem.leftBarButtonItem = cancelButton
+        configureUI()
         
         search
             .throttle(0.3, scheduler: MainScheduler.instance)
             .distinctUntilChanged()
             .flatMapLatest { query -> Observable<[Movie]> in
-                return TmdbService.movies(forSearchText: query).catchErrorJustReturn([])
+                return TmdbService.movies(forSearchText: query).catchErrorJustReturn([Movie]())
+            }
+            .cache(key: try! search.value() )
+            .catchError { error in
+                if let cachedResults = searchCache[try! self.search.value()] {
+                    return Observable.just(cachedResults)
+                } else {
+                    return Observable.just([])
+                }
             }
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { result in
@@ -49,7 +54,22 @@ class SearchViewController: UICollectionViewController {
             .addDisposableTo(bag)
     }
 
-
+    
+    // MARK: - Methods
+    
+    func configureUI() {
+        collectionView!.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
+        collectionView?.backgroundColor = .white
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        definesPresentationContext = true
+        navigationItem.titleView = searchController.searchBar
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(cancelButtonPressed))
+        navigationItem.leftBarButtonItem = cancelButton
+    }
+    
+    
     // MARK: - Actions
     
     func cancelButtonPressed() {
@@ -76,8 +96,20 @@ class SearchViewController: UICollectionViewController {
     }
 }
 
+
+// MARK: - SearchResultsUpdating
+
 extension SearchViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         search.onNext(searchController.searchBar.text ?? "")
+    }
+}
+
+
+extension ObservableType where E == Array<Movie> {
+    func cache(key: String) -> Observable<E> {
+        return self.observeOn(MainScheduler.instance).do(onNext: { movies in
+            searchCache[key] = movies
+        })
     }
 }
