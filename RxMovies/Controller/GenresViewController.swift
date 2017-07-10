@@ -13,6 +13,7 @@ import ContourProgressView
 
 
 final class GenresViewController: UIViewController {
+typealias GenreInfo = (genreCount: Int, genres: [Genre])
     
     
     // MARK: - Properties
@@ -20,12 +21,11 @@ final class GenresViewController: UIViewController {
     // UI
     private lazy var tableView: UITableView = {
         let tv = UITableView()
-        tv.dataSource = self; tv.delegate = self
         tv.separatorStyle = .none
         tv.rowHeight = 64
         tv.frame = self.view.bounds
         tv.contentInset = UIEdgeInsets(top: 32, left: 0, bottom: 32, right: 0)
-        tv.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
+        tv.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
         return tv
     }()
     private lazy var progressView: ContourProgressView = {
@@ -48,11 +48,9 @@ final class GenresViewController: UIViewController {
         return UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(self.searchButtonPressed))
     }()
     
-
-    // Rx
+    // State
     fileprivate let genresState = Variable<[Genre]>([])
     private let disposeBag = DisposeBag()
-    typealias GenreInfo = (genreCount: Int, genres: [Genre])
     
     
     // MARK: - Lifecycle
@@ -70,25 +68,42 @@ final class GenresViewController: UIViewController {
         let genresWithMovies = genres(genresObservable, combinedWithMovies: moviesObservable)
             .shareReplay(1)
         
-        
         // Fetch genres -> Fetch movies & add to genres -> bind updated genres stream to genres Variable
         genresObservable
             .concat(genresWithMovies.map { $0.genres })
             .bindTo(genresState)
             .addDisposableTo(disposeBag)
         
-        // Drive UI with download progress
+        // Drive download progress
         let progressDriver = genresWithMovies
             .asDriver(onErrorJustReturn: (genreCount: 0, genres: []))
             .map { CGFloat($0.genreCount) / CGFloat($0.genres.count) }
         progressDriver.drive(progressView.rx.progress).addDisposableTo(disposeBag)
         progressDriver.map { "\(Int($0 * 100))%" }.drive(progressLabel.rx.text).addDisposableTo(disposeBag)
         
-        // Bind genres variable to tableView reload
+        // Update TableView
         genresState
             .asObservable()
-            .observeOn(MainScheduler.instance)
-            .subscribe(onNext: { [weak self] _ in self?.tableView.reloadData() })
+            .bindTo(tableView.rx.items(cellIdentifier: "CellID", cellType: UITableViewCell.self)) { row, element, cell in
+                cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+                cell.textLabel?.textAlignment = .center
+                cell.textLabel?.text = "\(element.name) (\(element.movies.count))".uppercased()
+                cell.textLabel?.textColor = element.movies.isEmpty ? .lightGray : .black
+            }
+            .addDisposableTo(disposeBag)
+        
+        // Present MoviesVC
+        tableView.rx.itemSelected.asObservable()
+            .subscribe(onNext: { indexPath in
+                let selectedGenre = self.genresState.value[indexPath.row]
+                if !selectedGenre.movies.isEmpty {
+                    let moviesVC = MoviesViewController()
+                    moviesVC.title = selectedGenre.name
+                    moviesVC.movies.value = selectedGenre.movies
+                    self.navigationController?.pushViewController(moviesVC, animated: true)
+                }
+                self.tableView.deselectRow(at: indexPath, animated: true)
+            })
             .addDisposableTo(disposeBag)
     }
     
@@ -128,39 +143,5 @@ final class GenresViewController: UIViewController {
     func searchButtonPressed() {
         let searchVC = SearchViewController(collectionViewLayout: UICollectionViewFlowLayout(bounds: UIScreen.main.bounds))
         present(UINavigationController(rootViewController: searchVC), animated: true, completion: nil)
-    }
-}
-
-
-// MARK: - Tableview Delegate
-
-extension GenresViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedGenre = genresState.value[indexPath.row]
-        if !selectedGenre.movies.isEmpty {
-            let moviesVC = MoviesViewController()
-            moviesVC.title = selectedGenre.name
-            moviesVC.movies.value = selectedGenre.movies
-            navigationController?.pushViewController(moviesVC, animated: true)
-        }
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-}
-
-
-// MARK: - Tableview Datasource
-
-extension GenresViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return genresState.value.count
-    }
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath)
-        let genre = genresState.value[indexPath.row]
-        cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
-        cell.textLabel?.textAlignment = .center
-        cell.textLabel?.text = "\(genre.name) (\(genre.movies.count))".uppercased()
-        cell.textLabel?.textColor = genre.movies.isEmpty ? .lightGray : .black
-        return cell
     }
 }

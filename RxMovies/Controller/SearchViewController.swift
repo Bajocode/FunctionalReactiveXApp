@@ -40,6 +40,7 @@ class SearchViewController: UICollectionViewController {
             }
             .cache(key: try! search.value() )
             .catchError { error in
+                // Recover form error with cached result, if any
                 if let cachedResults = searchCache[try! self.search.value()] {
                     return Observable.just(cachedResults)
                 } else {
