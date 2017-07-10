@@ -31,58 +31,38 @@ final class MoviesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        slider.tintColor = Colors.primary
-        collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
-        collectionView.dataSource = self
-        collectionView.collectionViewLayout = UICollectionViewFlowLayout(bounds: view.bounds)
+        configureUI()
         
         // Slider stream
-        
         let sliderInput = slider.rx.controlEvent(.valueChanged).asObservable()
             .map { Int(self.slider.value) }
             .startWith(2017)
-        
         Observable.combineLatest(sliderInput, movies.asObservable()) { (year, movies) -> [Movie] in
             return movies.filter {
                 $0.year >= year }.sorted { $0.title < $1.title }
             }
             .bindTo(filteredMovies)
             .addDisposableTo(disposeBag)
-        
         sliderInput
             .asDriver(onErrorJustReturn: 2017)
             .map { "\($0)" }
             .drive(yearLabel.rx.text)
             .addDisposableTo(disposeBag)
         
-        subscribeUIRefreshToNewData()
+        // Update collectionView
+        filteredMovies.asObservable()
+            .bindTo(collectionView.rx.items(cellIdentifier: cellID, cellType: MovieCollectionViewCell.self)) { item, movie, cell in
+                cell.configure(with: movie.posterURL)
+            }
+            .addDisposableTo(disposeBag)
     }
     
     
     // MARK: - Methods
     
-    private func subscribeUIRefreshToNewData() {
-        // Update tableView everytime movies gets a new value
-        filteredMovies.asObservable()
-            .observeOn(MainScheduler.instance)
-            .subscribe(onNext: { [weak self] _ in
-                self?.movieCountLabel.text = "\(self?.filteredMovies.value.count ?? 0) Movies"
-                self?.collectionView.reloadData()
-            })
-            .addDisposableTo(disposeBag)
-    }
-}
-
-
-// MARK: - CollectionView Datasource
-
-extension MoviesViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return filteredMovies.value.count
-    }
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! MovieCollectionViewCell
-        cell.configure(with: filteredMovies.value[indexPath.row].posterURL)
-        return cell
+    func configureUI() {
+        slider.tintColor = Colors.primary
+        collectionView.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
+        collectionView.collectionViewLayout = UICollectionViewFlowLayout(bounds: view.bounds)
     }
 }

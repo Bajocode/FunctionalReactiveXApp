@@ -82,13 +82,12 @@ typealias GenreInfo = (genreCount: Int, genres: [Genre])
         progressDriver.map { "\(Int($0 * 100))%" }.drive(progressLabel.rx.text).addDisposableTo(disposeBag)
         
         // Update TableView
-        genresState
-            .asObservable()
-            .bindTo(tableView.rx.items(cellIdentifier: "CellID", cellType: UITableViewCell.self)) { row, element, cell in
+        genresState.asObservable()
+            .bindTo(tableView.rx.items(cellIdentifier: "CellID", cellType: UITableViewCell.self)) { row, genre, cell in
                 cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
                 cell.textLabel?.textAlignment = .center
-                cell.textLabel?.text = "\(element.name) (\(element.movies.count))".uppercased()
-                cell.textLabel?.textColor = element.movies.isEmpty ? .lightGray : .black
+                cell.textLabel?.text = "\(genre.name) (\(genre.movies.count))".uppercased()
+                cell.textLabel?.textColor = genre.movies.isEmpty ? .lightGray : .black
             }
             .addDisposableTo(disposeBag)
         
