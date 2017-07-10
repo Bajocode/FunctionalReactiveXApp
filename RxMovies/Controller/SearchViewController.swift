@@ -21,7 +21,7 @@ class SearchViewController: UICollectionViewController {
     
     fileprivate let cellID = "MovieCell"
     let searchController = UISearchController(searchResultsController: nil)
-    let bag = DisposeBag()
+    let disposeBag = DisposeBag()
     var movies = [Movie]()
     let search = BehaviorSubject(value: "")
     
@@ -32,7 +32,8 @@ class SearchViewController: UICollectionViewController {
         super.viewDidLoad()
         configureUI()
         
-        search
+        // Configure search result stream
+        let result = search
             .throttle(0.3, scheduler: MainScheduler.instance)
             .distinctUntilChanged()
             .flatMapLatest { query -> Observable<[Movie]> in
@@ -47,12 +48,13 @@ class SearchViewController: UICollectionViewController {
                     return Observable.just([])
                 }
             }
-            .observeOn(MainScheduler.instance)
-            .subscribe(onNext: { result in
-                self.movies = result
-                self.collectionView?.reloadSections(IndexSet(integer: 0))
-            })
-            .addDisposableTo(bag)
+        
+        // Update collectionView
+        result
+            .bindTo(collectionView!.rx.items(cellIdentifier: cellID, cellType: MovieCollectionViewCell.self)) { item, movie, cell in
+                cell.configure(with: movie.posterURL)
+            }
+            .addDisposableTo(disposeBag)
     }
 
     
@@ -61,6 +63,7 @@ class SearchViewController: UICollectionViewController {
     func configureUI() {
         collectionView!.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: cellID)
         collectionView?.backgroundColor = .white
+        collectionView?.delegate = nil; collectionView?.dataSource = nil
         searchController.searchResultsUpdater = self
         searchController.dimsBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
@@ -76,25 +79,6 @@ class SearchViewController: UICollectionViewController {
     func cancelButtonPressed() {
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
-    
-    
-    // MARK: UICollectionViewDataSource
-
-    override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 1
-    }
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of items
-        return movies.count
-    }
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! MovieCollectionViewCell
-        cell.backgroundColor = .white
-        cell.configure(with: movies[indexPath.row].posterURL)
-        return cell
-    }
 }
 
 
@@ -106,6 +90,8 @@ extension SearchViewController: UISearchResultsUpdating {
     }
 }
 
+
+// MARK: - Caching 
 
 extension ObservableType where E == Array<Movie> {
     func cache(key: String) -> Observable<E> {
